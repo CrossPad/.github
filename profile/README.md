@@ -5,7 +5,7 @@
 Open-source MIDI pad controller with a 320x240 LCD, 4x4 RGB pads, rotary encoder, and built-in audio engine. Runs on ESP32-S3 + STM32 hardware. Fully simulatable on PC (Windows, macOS, Linux).
 
 <p align="center">
-  <img src="docs/images/simulator_full.png" alt="CrossPad PC Simulator" width="350">
+  <img src="docs/images/simulator_launcher.png" alt="CrossPad PC Simulator" width="350">
 </p>
 
 <p align="center">
@@ -35,8 +35,6 @@ The same code runs on real hardware and on a desktop simulator with full feature
 
 <p align="center">
   <img src="docs/images/simulator_launcher.png" alt="App Launcher" width="280">
-  &nbsp;
-  <img src="docs/images/simulator_instructions.png" alt="Simulator Controls" width="280">
 </p>
 
 ## Repository map
