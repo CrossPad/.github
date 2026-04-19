@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="https://i.ibb.co/twTZr0mp/videoframe-2033.jpg" alt="CrossPad — the open-source MIDI pad controller" width="100%">
+
 # 🎛️ CrossPad
 
 ### An open-source MIDI pad controller — hardware, firmware, and software, all in the open.
