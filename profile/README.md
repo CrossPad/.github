@@ -9,6 +9,15 @@
 **4×4 velocity-sensitive RGB pads · 320×240 LCD · FM synth · MIDI USB/BLE/UART · Full PC simulator**
 
 <p>
+  <a href="https://crosspad.app">
+    <img src="https://img.shields.io/badge/🌐%20Website-crosspad.app-8B5CF6?style=for-the-badge" alt="crosspad.app">
+  </a>
+  <a href="https://play.crosspad.app">
+    <img src="https://img.shields.io/badge/▶%20Try%20it-play.crosspad.app-00C896?style=for-the-badge" alt="play.crosspad.app">
+  </a>
+</p>
+
+<p>
   <img src="https://img.shields.io/badge/License-Open%20Source-success?style=for-the-badge" alt="Open Source">
   <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge" alt="Active">
   <img src="https://img.shields.io/badge/Platforms-ESP32--S3%20%7C%20STM32%20%7C%20PC-blue?style=for-the-badge" alt="Platforms">
@@ -36,14 +45,14 @@
 
 ## 🌐 Try it now — no install, no hardware
 
-Don't feel like building anything? **Open [play.crosspad.pl](https://play.crosspad.pl) in your browser** and play CrossPad right away. The web app runs the same UI and app logic as the real device — pads, launcher, synth engine, and all.
+Don't feel like building anything? **Open [play.crosspad.app](https://play.crosspad.app) in your browser** and play CrossPad right away. The web app runs the same UI and app logic as the real device — pads, launcher, synth engine, and all.
 
 <div align="center">
-<a href="https://play.crosspad.pl">
-  <img src="https://i.ibb.co/ycgpyG3D/Zrzut-ekranu-2026-04-19-o-09-46-37.png" alt="CrossPad web app at play.crosspad.pl" width="420">
+<a href="https://play.crosspad.app">
+  <img src="https://i.ibb.co/ycgpyG3D/Zrzut-ekranu-2026-04-19-o-09-46-37.png" alt="CrossPad web app at play.crosspad.app" width="420">
 </a>
 <br>
-<sub><b>▶ <a href="https://play.crosspad.pl">play.crosspad.pl</a> — CrossPad in your browser</b></sub>
+<sub><b>▶ <a href="https://play.crosspad.app">play.crosspad.app</a> — CrossPad in your browser</b></sub>
 </div>
 
 ---
@@ -266,8 +275,12 @@ CrossPad was born from inside the scene it serves: built by musicians and engine
 </table>
 
 <p align="center">
-  <a href="https://play.crosspad.pl">
-    <img src="https://img.shields.io/badge/Web%20App-play.crosspad.pl-8B5CF6?style=for-the-badge&logo=googlechrome&logoColor=white" alt="play.crosspad.pl">
+  <a href="https://crosspad.app">
+    <img src="https://img.shields.io/badge/Website-crosspad.app-8B5CF6?style=for-the-badge&logo=googlechrome&logoColor=white" alt="crosspad.app">
+  </a>
+  &nbsp;
+  <a href="https://play.crosspad.app">
+    <img src="https://img.shields.io/badge/Web%20App-play.crosspad.app-00C896?style=for-the-badge&logo=googlechrome&logoColor=white" alt="play.crosspad.app">
   </a>
   &nbsp;
   <a href="https://www.instagram.com/stevenashbeats/">
