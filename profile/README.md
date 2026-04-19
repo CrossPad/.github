@@ -28,8 +28,22 @@
 
 <img src="../docs/images/simulator_full.png" alt="CrossPad PC Simulator" width="420">
 
-<sub><b>The same code runs on real hardware and in a full desktop simulator.</b></sub>
+<sub><b>The same code runs on real hardware, in a full desktop simulator, and in your browser.</b></sub>
 
+</div>
+
+---
+
+## 🌐 Try it now — no install, no hardware
+
+Don't feel like building anything? **Open [play.crosspad.pl](https://play.crosspad.pl) in your browser** and play CrossPad right away. The web app runs the same UI and app logic as the real device — pads, launcher, synth engine, and all.
+
+<div align="center">
+<a href="https://play.crosspad.pl">
+  <img src="https://i.ibb.co/ycgpyG3D/Zrzut-ekranu-2026-04-19-o-09-46-37.png" alt="CrossPad web app at play.crosspad.pl" width="700">
+</a>
+<br>
+<sub><b>▶ <a href="https://play.crosspad.pl">play.crosspad.pl</a> — CrossPad in your browser</b></sub>
 </div>
 
 ---
@@ -206,6 +220,26 @@ See [crosspad-pc/CLAUDE.md](https://github.com/CrossPad/crosspad-pc/blob/master/
 
 ---
 
+## 👥 The team behind CrossPad
+
+CrossPad is a project developed by a team, initiated by **[Steve Nash Beats](https://www.instagram.com/stevenashbeats/)** — finger drummer and one of the people uniting the global finger-drumming community.
+
+CrossPad was born from inside the scene it serves: built by players who wanted a controller designed around how finger drummers actually perform, practice, and share. That's why every layer of the device — from pad response to app structure — is shaped by musicians, not spec sheets.
+
+<p align="center">
+  <a href="https://www.instagram.com/stevenashbeats/">
+    <img src="https://img.shields.io/badge/Instagram-%40stevenashbeats-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
+  </a>
+  &nbsp;
+  <a href="https://play.crosspad.pl">
+    <img src="https://img.shields.io/badge/Web%20App-play.crosspad.pl-8B5CF6?style=for-the-badge&logo=googlechrome&logoColor=white" alt="play.crosspad.pl">
+  </a>
+</p>
+
+Got ideas, feedback, or just want to share what you made with CrossPad? Reach out on Instagram or open an issue on any repo — the community is the reason this project exists.
+
+---
+
 ## 📄 License
 
 **Open source.** Schematics, firmware, PC tools, documentation — all in the open.
@@ -216,7 +250,7 @@ See [crosspad-pc/CLAUDE.md](https://github.com/CrossPad/crosspad-pc/blob/master/
 
 <div align="center">
 
-**Built with ❤️ and a soldering iron.**
+**Built with ❤️ and a soldering iron, by and for the finger-drumming community.**
 
 If CrossPad is useful to you, a ⭐ on the repos really helps.
 
