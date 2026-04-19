@@ -2,11 +2,13 @@
 
 <img src="https://i.ibb.co/twTZr0mp/videoframe-2033.jpg" alt="CrossPad — the open-source MIDI pad controller" width="100%">
 
-# 🎛️ CrossPad
+# 🎛️ CrossPad S3
 
-### An open-source MIDI pad controller — hardware, firmware, and software, all in the open.
+### An ultra-compact, open-source, hackable sampler — a platform for building your own beat machine.
 
-**4×4 velocity-sensitive RGB pads · 320×240 LCD · FM synth · MIDI USB/BLE/UART · Full PC simulator**
+### *Build it yourself. Play it anywhere. Modify anytime.*
+
+**ESP32-S3 · 16 velocity-sensitive pads · Touch screen · WiFi + BLE · 2000 mAh battery · SD card · Stereo line out · No soldering**
 
 <p>
   <a href="https://crosspad.app">
@@ -45,7 +47,7 @@
 
 ## 🌐 Try it now — no install, no hardware
 
-Don't feel like building anything? **Open [play.crosspad.app](https://play.crosspad.app) in your browser** and play CrossPad right away. The web app runs the same UI and app logic as the real device — pads, launcher, synth engine, and all.
+No hardware yet? No problem. **Open [play.crosspad.app](https://play.crosspad.app) in your browser** and play CrossPad right away. The web app runs the same UI and app logic as the real device — pads, launcher, synth engine, and all.
 
 <div align="center">
 <a href="https://play.crosspad.app">
@@ -59,14 +61,22 @@ Don't feel like building anything? **Open [play.crosspad.app](https://play.cross
 
 ## ✨ Why CrossPad?
 
-CrossPad is a music controller built **from scratch** — PCB to pixel. It's not a firmware flashed onto someone else's board. The schematics, the firmware, the GUI framework integration, the desktop simulator, and even the Claude-Code developer tooling are all open and hackable.
+CrossPad isn't another closed box with a logo on it. It's an **open platform for programming your own beat machine** — designed for two crowds that usually have to choose sides:
 
-- 🎹 **Play it.** 4×4 velocity-sensitive RGB pads, rotary encoder, crisp 320×240 color LCD with animated LVGL UI.
-- 🔊 **Hear it.** Built-in FM synth, mixer, and effects chain with I2S audio out.
-- 🔌 **Connect it.** Class-compliant MIDI over USB, BLE, and UART — no drivers.
-- 🧩 **Extend it.** Modular app system — drop in a new app (sequencer, sampler, piano…) without touching the core.
-- 💻 **Develop it anywhere.** A PC simulator with full feature parity — build and test apps in seconds, no hardware required.
+- 🎧 **Producers & beatmakers** who want a portable, expressive sampler they can take anywhere and actually perform with.
+- 🔧 **Tinkerers & makers** who want hardware they can open, program, modify, and extend — firmware, schematics, everything.
+
+CrossPad ships as a ready-to-play instrument **and** as a hackable dev platform. Same device, your choice.
+
+- 🎒 **Take it anywhere.** Built-in 2000 mAh battery, compact body, stereo line out — your studio fits in your pocket.
+- 🎹 **Play it.** 16 velocity-sensitive RGB pads, rotary encoder, and a touchscreen color LCD with an animated LVGL UI.
+- 🔊 **Hear it.** Built-in sampler plus FM synth, mixer, and effects chain. SD card for your sounds, stereo line out with independent mixing.
+- 🔌 **Connect it everywhere.** Class-compliant MIDI over USB, BLE, and UART — plus WiFi for network features. No drivers, no dongles.
+- 🧩 **Extend it.** Modular app system — drop in a new app (sequencer, sampler, piano…) without touching the core. Write apps in C++ and they run on both real hardware and the simulator.
+- 🔨 **Build it yourself.** Engineered for DIY assembly — no soldering required. Components chosen to stay accessible and swappable.
+- 💻 **Develop anywhere.** A full PC simulator with feature parity — build and test apps in seconds, no hardware needed.
 - 🤖 **Build it with Claude.** A dedicated [MCP server](https://github.com/CrossPad/crosspad-mcp) gives Claude Code 17 tools to build, test, screenshot, inject input, search code, tweak settings, and inspect runtime state.
+- 🌍 **Fully open.** PCB to pixel. Schematics, firmware, GUI, tooling — all public, all hackable. The components were picked so you can actually rework and remix the design.
 
 <div align="center">
 <img src="../docs/images/simulator_launcher.png" alt="App Launcher" width="320">
