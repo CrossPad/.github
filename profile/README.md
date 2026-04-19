@@ -40,7 +40,7 @@ Don't feel like building anything? **Open [play.crosspad.pl](https://play.crossp
 
 <div align="center">
 <a href="https://play.crosspad.pl">
-  <img src="https://i.ibb.co/ycgpyG3D/Zrzut-ekranu-2026-04-19-o-09-46-37.png" alt="CrossPad web app at play.crosspad.pl" width="700">
+  <img src="https://i.ibb.co/ycgpyG3D/Zrzut-ekranu-2026-04-19-o-09-46-37.png" alt="CrossPad web app at play.crosspad.pl" width="420">
 </a>
 <br>
 <sub><b>▶ <a href="https://play.crosspad.pl">play.crosspad.pl</a> — CrossPad in your browser</b></sub>
