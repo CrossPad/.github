@@ -222,21 +222,60 @@ See [crosspad-pc/CLAUDE.md](https://github.com/CrossPad/crosspad-pc/blob/master/
 
 ## 👥 The team behind CrossPad
 
-CrossPad is a project developed by a team, initiated by **[Steve Nash Beats](https://www.instagram.com/stevenashbeats/)** — finger drummer and one of the people uniting the global finger-drumming community.
+CrossPad was born from inside the scene it serves: built by musicians and engineers who wanted a controller designed around how finger drummers actually perform, practice, and share. Every layer of the device — from pad response to app structure — is shaped by players and builders, not spec sheets.
 
-CrossPad was born from inside the scene it serves: built by players who wanted a controller designed around how finger drummers actually perform, practice, and share. That's why every layer of the device — from pad response to app structure — is shaped by musicians, not spec sheets.
+<table align="center">
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://github.com/stevenashbeats">
+        <img src="https://github.com/stevenashbeats.png" width="120" style="border-radius: 50%;" alt="Steve Nash"><br>
+        <b>Steve Nash</b>
+      </a><br>
+      <sub>Fingerdrummer / Performer / Program Founder</sub><br><br>
+      <sub>World Champion fingerdrummer and creative technologist. Founder of the CrossPad project, combining music, design, and open technology to empower creators around the world.</sub><br><br>
+      <a href="https://github.com/stevenashbeats">
+        <img src="https://img.shields.io/badge/GitHub-%40stevenashbeats-181717?logo=github&logoColor=white" alt="GitHub @stevenashbeats">
+      </a><br>
+      <a href="https://www.instagram.com/stevenashbeats/">
+        <img src="https://img.shields.io/badge/Instagram-%40stevenashbeats-E4405F?logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
+      </a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://github.com/marcel-licence">
+        <img src="https://github.com/marcel-licence.png" width="120" style="border-radius: 50%;" alt="Marcel Licence"><br>
+        <b>Marcel Licence</b>
+      </a><br>
+      <sub>Programmer / Audio Systems Developer</sub><br><br>
+      <sub>Software engineer specializing in embedded audio and real-time DSP. Brings CrossPad's sound engine to life with precision, efficiency, and an open-source mindset.</sub><br><br>
+      <a href="https://github.com/marcel-licence">
+        <img src="https://img.shields.io/badge/GitHub-%40marcel--licence-181717?logo=github&logoColor=white" alt="GitHub @marcel-licence">
+      </a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://github.com/matixan">
+        <img src="https://github.com/matixan.png" width="120" style="border-radius: 50%;" alt="Mateusz Czarnecki"><br>
+        <b>Mateusz Czarnecki</b>
+      </a><br>
+      <sub>Hardware Designer</sub><br><br>
+      <sub>Electronics designer and prototyping expert responsible for CrossPad's hardware architecture. Focused on compact design, intuitive layout, and seamless integration between music and technology.</sub><br><br>
+      <a href="https://github.com/matixan">
+        <img src="https://img.shields.io/badge/GitHub-%40matixan-181717?logo=github&logoColor=white" alt="GitHub @matixan">
+      </a>
+    </td>
+  </tr>
+</table>
 
 <p align="center">
-  <a href="https://www.instagram.com/stevenashbeats/">
-    <img src="https://img.shields.io/badge/Instagram-%40stevenashbeats-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
-  </a>
-  &nbsp;
   <a href="https://play.crosspad.pl">
     <img src="https://img.shields.io/badge/Web%20App-play.crosspad.pl-8B5CF6?style=for-the-badge&logo=googlechrome&logoColor=white" alt="play.crosspad.pl">
   </a>
+  &nbsp;
+  <a href="https://www.instagram.com/stevenashbeats/">
+    <img src="https://img.shields.io/badge/Follow-%40stevenashbeats-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
+  </a>
 </p>
 
-Got ideas, feedback, or just want to share what you made with CrossPad? Reach out on Instagram or open an issue on any repo — the community is the reason this project exists.
+Got ideas, feedback, or something you built with CrossPad? Reach out on Instagram or open an issue on any repo — the community is the reason this project exists.
 
 ---
 
