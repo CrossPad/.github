@@ -18,7 +18,7 @@
     <img src="https://img.shields.io/badge/▶%20Try%20it-play.crosspad.app-00C896?style=for-the-badge" alt="play.crosspad.app">
   </a>
   <a href="https://discord.gg/WscqnaDwFJ">
-    <img src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join the CrossPad Discord">
+    <img src="https://img.shields.io/discord/1368493946552062002?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="CrossPad Discord — members online">
   </a>
 </p>
 
@@ -297,11 +297,17 @@ CrossPad was born from inside the scene it serves: built by musicians and engine
   </a>
   &nbsp;
   <a href="https://discord.gg/WscqnaDwFJ">
-    <img src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join the CrossPad Discord">
+    <img src="https://img.shields.io/discord/1368493946552062002?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="CrossPad Discord — members online">
   </a>
   &nbsp;
   <a href="https://www.instagram.com/stevenashbeats/">
     <img src="https://img.shields.io/badge/Follow-%40stevenashbeats-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://discord.gg/WscqnaDwFJ">
+    <img src="https://discord.com/api/guilds/1368493946552062002/widget.png?style=banner2" alt="CrossPad Discord: who is online right now">
   </a>
 </p>
 
