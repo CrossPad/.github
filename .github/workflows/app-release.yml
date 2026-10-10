@@ -1,0 +1,53 @@
+name: App release (reusable)
+
+# Called by every enrolled app repo's .github/workflows/app-release.yml on a
+# push that touches crosspad-app.json. Tags vX.Y.Z and publishes it as a GitHub
+# prerelease with the job's GITHUB_TOKEN, and nothing more: app repos hold no
+# bot key. The announcer Worker sees `release.published`, posts the Nightly
+# ping and relays `app-released` to crosspad-apps (registry) and platform-idf
+# (bump PR). Callers pin @v1. Spec: platform-idf
+# 2026-10-10-release-automation-design.md.
+#
+# No backfill: while a repo has no vX.Y.Z tag, only a push that bumps the
+# version publishes (see scripts/app_release.py).
+on:
+  workflow_call:
+    inputs:
+      runner:
+        type: string
+        required: false
+        default: ubuntu-latest
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Only the repo's default branch, only on a push (or a manual run of the
+    # caller). A pull request, a fork or any other ref never reaches the token.
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: CrossPad/.github
+          # refs/tags/: a bare `v1` would prefer a branch named v1.
+          ref: refs/tags/v1
+          path: .crosspad-ci
+          persist-credentials: false
+      - name: Tag and publish the version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GIT_CONFIG_GLOBAL: /dev/null
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: >
+          python3 -I .crosspad-ci/scripts/app_release.py release
+          --event "$EVENT_NAME" --before "$BEFORE"
