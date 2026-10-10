@@ -1,0 +1,72 @@
+name: App release (reusable)
+
+# Called by every enrolled app repo's .github/workflows/app-release.yml on a
+# push that touches crosspad-app.json. Tags vX.Y.Z, publishes a GitHub
+# prerelease (the announcer posts it as a nightly), then dispatches
+# `app-released` to crosspad-apps (registry) and platform-idf (bump PR).
+# Callers pin @v1. Spec: platform-idf 2026-10-10-release-automation-design.md.
+#
+# This repo is public: the workflow holds no secrets. The caller passes the bot
+# key explicitly (no `secrets: inherit`).
+on:
+  workflow_call:
+    inputs:
+      bot-app-id:
+        type: string
+        required: true
+      runner:
+        type: string
+        required: false
+        default: ubuntu-latest
+    secrets:
+      bot-private-key:
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Only the repo's default branch, only on a push (or a manual run of the
+    # caller). A pull request, a fork or any other ref never reaches a step
+    # that holds a token.
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: CrossPad/.github
+          ref: v1
+          path: .crosspad-ci
+          persist-credentials: false
+      - id: rel
+        name: Tag and publish the version
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 .crosspad-ci/scripts/app_release.py release
+      - id: token
+        if: steps.rel.outputs.released == 'true'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ inputs.bot-app-id }}
+          private-key: ${{ secrets.bot-private-key }}
+          owner: CrossPad
+          repositories: platform-idf,crosspad-apps
+          permission-contents: write
+      - name: Tell crosspad-apps and platform-idf
+        if: steps.rel.outputs.released == 'true'
+        env:
+          BOT_TOKEN: ${{ steps.token.outputs.token }}
+          APP_ID: ${{ steps.rel.outputs.app_id }}
+          APP_VERSION: ${{ steps.rel.outputs.version }}
+          APP_SHA: ${{ steps.rel.outputs.sha }}
+        run: >
+          python3 .crosspad-ci/scripts/app_release.py dispatch
+          --app-id "$APP_ID" --version "$APP_VERSION" --sha "$APP_SHA"
