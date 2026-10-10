@@ -51,7 +51,7 @@ def read_manifest(text: str) -> tuple[str, str, str]:
         raise Refused(f"crosspad-app.json version {version!r}: must be X.Y.Z (the app manager's release rule)")
     app_id = str(doc.get("id", ""))
     if not APP_ID.fullmatch(app_id):
-        # The id is passed on to the next steps and to the dispatch payload.
+        # The id goes to $GITHUB_OUTPUT (and on to the announcer), so no newlines or odd characters.
         raise Refused(f"crosspad-app.json id {app_id!r}: letters, digits, '.', '_' and '-' only")
     return app_id, str(doc.get("name") or app_id), version
 
