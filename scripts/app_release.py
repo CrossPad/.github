@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
-"""Tag and publish an app version, then tell crosspad-apps and platform-idf.
+"""Tag an app version and publish it as a GitHub prerelease.
 
 Run by .github/workflows/app-release.yml (reusable) inside the app repo's
 checkout. Standard library and git only: it runs on the crosspad-light org
-runner (no gh). Spec: platform-idf docs/superpowers/specs/2026-10-10-release-
-automation-design.md, "CrossPad/.github".
+runner (no gh). It holds GITHUB_TOKEN and nothing else: app repos have no bot
+key. The announcer Worker relays `app-released` to crosspad-apps and
+platform-idf after `release.published`. Spec: platform-idf docs/superpowers/
+specs/2026-10-10-release-automation-design.md, "CrossPad/.github".
 
-  app_release.py release     # GITHUB_TOKEN; outputs released, app_id, version, sha
-  app_release.py dispatch --app-id ID --version V --sha SHA   # BOT_TOKEN
+  app_release.py release --event NAME --before SHA
+      outputs released, app_id, version, sha to $GITHUB_OUTPUT
+
+No backfill: while the repo has no vX.Y.Z tag, only a push that itself bumps the
+version publishes (the existing versions get no tags, no burst of pings).
 """
 import argparse
 import json
@@ -18,21 +23,29 @@ import sys
 import urllib.error
 import urllib.request
 
-VERSION = re.compile(r"\d+\.\d+\.\d+")
+NUM = r"(0|[1-9][0-9]*)"  # ASCII digits, no leading zeros
+VERSION = re.compile(rf"{NUM}\.{NUM}\.{NUM}")
 APP_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
-RELEASE_TAG = re.compile(r"v(\d+)\.(\d+)\.(\d+)")
-DISPATCH_TARGETS = ("CrossPad/crosspad-apps", "CrossPad/platform-idf")
+RELEASE_TAG = re.compile(rf"v{NUM}\.{NUM}\.{NUM}")
+SHA = re.compile(r"[0-9a-f]{40,64}")
 
 
 class Refused(Exception):
     pass
 
 
-def read_manifest(text: str) -> tuple[str, str, str]:
+def _load_object(text: str, what: str) -> dict:
     try:
         doc = json.loads(text)
     except ValueError as e:
-        raise Refused(f"crosspad-app.json is not valid JSON: {e}") from e
+        raise Refused(f"{what} is not valid JSON: {e}") from e
+    if not isinstance(doc, dict):
+        raise Refused(f"{what} must be a JSON object")
+    return doc
+
+
+def read_manifest(text: str) -> tuple[str, str, str]:
+    doc = _load_object(text, "crosspad-app.json")
     version = str(doc.get("version", ""))
     if not VERSION.fullmatch(version):
         raise Refused(f"crosspad-app.json version {version!r}: must be X.Y.Z (the app manager's release rule)")
@@ -40,13 +53,20 @@ def read_manifest(text: str) -> tuple[str, str, str]:
     if not APP_ID.fullmatch(app_id):
         # The id is passed on to the next steps and to the dispatch payload.
         raise Refused(f"crosspad-app.json id {app_id!r}: letters, digits, '.', '_' and '-' only")
-    return app_id, doc.get("name", app_id), version
+    return app_id, str(doc.get("name") or app_id), version
+
+
+def changelog_of(doc: dict) -> list[str]:
+    entries = doc.get("changelog", [])
+    if not isinstance(entries, list) or not all(isinstance(e, str) for e in entries):
+        raise Refused("crosspad-app.json changelog must be a list of strings")
+    return entries
 
 
 def check_library(version: str, library_text: str | None) -> str | None:
     if library_text is None:
         return None
-    lib = str(json.loads(library_text).get("version", ""))
+    lib = str(_load_object(library_text, "library.json").get("version", ""))
     return None if lib == version else f"library.json version {lib} differs from crosspad-app.json {version}"
 
 
@@ -89,11 +109,48 @@ def git(*args: str) -> str:
     return subprocess.run(["git", *args], check=True, capture_output=True, text=True).stdout
 
 
+def _is_ancestor(commit: str, of: str) -> bool | None:
+    """None when git cannot tell (an unknown object)."""
+    rc = subprocess.run(["git", "merge-base", "--is-ancestor", commit, of], capture_output=True).returncode
+    return {0: True, 1: False}.get(rc)
+
+
+def first_release_skip(event: str, before: str, introduced_before) -> str | None:
+    """Why the first release of a repo with no release tag must not happen, or None.
+
+    Only a push that bumps the version may publish: the version's introducing
+    commit must not be an ancestor of the push's `before`. introduced_before is
+    called only when needed and returns True, False or None (git cannot tell).
+    """
+    if event != "push":
+        return f"no vX.Y.Z tag yet and the event is {event or 'unknown'}, not a push: nothing released"
+    if not before or set(before) == {"0"}:
+        return "no vX.Y.Z tag yet and this push creates the branch: nothing released"
+    was = introduced_before()
+    if was is None:
+        return "no vX.Y.Z tag yet and cannot tell whether this push bumped the version: nothing released"
+    if was:
+        return "no vX.Y.Z tag yet and the version was not bumped in this push: nothing released"
+    return None
+
+
+def _introducing_sha(version: str) -> str:
+    shas = git("log", "--first-parent", "--format=%H", "--", "crosspad-app.json").split()
+    history = []
+    for sha in shas:
+        v = _version_at(sha)
+        history.append((sha, v))
+        if v != version:
+            break
+    return introducing_commit(history, version)
+
+
 def _version_at(sha: str) -> str | None:
     try:
-        return str(json.loads(git("show", f"{sha}:crosspad-app.json")).get("version"))
+        doc = json.loads(git("show", f"{sha}:crosspad-app.json"))
     except (subprocess.CalledProcessError, ValueError):
         return None
+    return str(doc.get("version")) if isinstance(doc, dict) else None
 
 
 def api(method: str, path: str, token: str, body=None):
@@ -120,7 +177,9 @@ def _output(**kv) -> None:
                 f.write(f"{k}={v}\n")
 
 
-def cmd_release() -> int:
+def cmd_release(event: str, before: str) -> int:
+    if before and not SHA.fullmatch(before):
+        raise Refused(f"--before {before!r}: not a commit sha")
     app_id, name, version = read_manifest(open("crosspad-app.json", encoding="utf-8").read())
     lib = open("library.json", encoding="utf-8").read() if os.path.exists("library.json") else None
     problem = check_library(version, lib)
@@ -128,22 +187,19 @@ def cmd_release() -> int:
         raise Refused(problem)
     tags = git("tag", "-l", "v*").split()
     tag = f"v{version}"
-    ancestor = tag in tags and subprocess.run(
-        ["git", "merge-base", "--is-ancestor", f"refs/tags/{tag}", "HEAD"]).returncode == 0
+    ancestor = tag in tags and _is_ancestor(f"refs/tags/{tag}", "HEAD") is True
     action, why = decide(version, tags, ancestor)
+    if action == "release" and newest_release(tags) is None:
+        action, why = "noop", first_release_skip(
+            event, before, lambda: _is_ancestor(_introducing_sha(version), before)) or ""
+        if not why:
+            action = "release"
     if action == "noop":
-        print(why)
+        print(f"::notice::{why}" if why.startswith("no vX.Y.Z") else why)
         _output(released="false")
         return 0
-    shas = git("log", "--first-parent", "--format=%H", "--", "crosspad-app.json").split()
-    history = []
-    for sha in shas:
-        v = _version_at(sha)
-        history.append((sha, v))
-        if v != version:
-            break
-    sha = introducing_commit(history, version)
-    changelog = json.loads(git("show", f"{sha}:crosspad-app.json")).get("changelog", [])
+    sha = _introducing_sha(version)
+    changelog = changelog_of(_load_object(git("show", f"{sha}:crosspad-app.json"), "crosspad-app.json"))
     notes = notes_for(changelog, version) or f"{name} {version}"
     api("POST", f"/repos/{os.environ['GITHUB_REPOSITORY']}/releases", os.environ["GITHUB_TOKEN"],
         {"tag_name": tag, "target_commitish": sha, "name": f"{name} {version}", "body": notes,
@@ -153,35 +209,17 @@ def cmd_release() -> int:
     return 0
 
 
-def cmd_dispatch(app_id: str, version: str, sha: str) -> int:
-    payload = {"repo": os.environ["GITHUB_REPOSITORY"], "app_id": app_id, "version": version,
-               "sha": sha, "tag": f"v{version}"}
-    failed = []
-    for target in DISPATCH_TARGETS:
-        try:
-            api("POST", f"/repos/{target}/dispatches", os.environ["BOT_TOKEN"],
-                {"event_type": "app-released", "client_payload": payload})
-            print(f"dispatched app-released to {target}")
-        except Refused as e:  # one target down must not starve the other
-            failed.append(f"{target}: {e}")
-    if failed:
-        raise Refused("; ".join(failed))
-    return 0
-
-
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("release")
-    d = sub.add_parser("dispatch")
-    d.add_argument("--app-id", required=True)
-    d.add_argument("--version", required=True)
-    d.add_argument("--sha", required=True)
+    r = sub.add_parser("release")
+    r.add_argument("--event", required=True, help="github.event_name of the caller")
+    r.add_argument("--before", required=True, help="github.event.before ('' outside a push)")
     ns = ap.parse_args(argv)
     try:
-        return cmd_release() if ns.cmd == "release" else cmd_dispatch(ns.app_id, ns.version, ns.sha)
-    except Refused as e:
-        print(f"::error::{e}")
+        return cmd_release(ns.event, ns.before)
+    except (Refused, OSError, ValueError, subprocess.CalledProcessError) as e:
+        print("::error::" + str(e).replace("\r", "").replace("\n", "%0A"))
         return 1
 
 
