@@ -365,3 +365,13 @@ def test_workflow_passes_kind_and_checks_scripts_out_at_v2():
     steps = doc["jobs"]["release"]["steps"]
     assert steps[1]["with"]["ref"] == "refs/tags/v2"
     assert steps[2]["env"]["KIND"] == "${{ inputs.kind }}" and '--kind "$KIND"' in steps[2]["run"]
+
+
+def test_library_tags_the_commit_where_the_header_caught_up(tmp_path, monkeypatch, run_lib):
+    # c0 1.52.0/1.52.0; c1 bumps library.json, header still 1.52.0; c2 fixes the header.
+    shas = _lib_repo(tmp_path, monkeypatch, ["1.52.0", "1.53.0", "1.53.0"], header_lag=True)
+    subprocess.run(["git", "tag", "v1.52.0", shas[0]], check=True)
+    rc, calls, out = run_lib("push", shas[1])
+    assert rc == 0
+    assert calls[0][3] == {"ref": "refs/tags/v1.53.0", "sha": shas[2]}
+    assert out[-1] == f"sha={shas[2]}"

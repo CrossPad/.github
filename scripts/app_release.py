@@ -260,16 +260,32 @@ def cmd_release(event: str, before: str, kind: str = "app") -> int:
     return 0
 
 
+def _library_tag_sha(version: str, header_path: str) -> str:
+    """The oldest first-parent commit, from the version's introducing commit up to HEAD, where
+    library.json and the version header both say `version`: the header may land after the bump."""
+    first = _introducing_sha(version, "library.json")
+    shas = [first] + git("rev-list", "--first-parent", "--reverse", f"{first}..HEAD").split()
+    for sha in shas:
+        try:
+            if _version_at(sha, "library.json") == version and \
+                    header_version({header_path: git("show", f"{sha}:{header_path}")}) == version:
+                return sha
+        except (Refused, subprocess.CalledProcessError):
+            continue
+    raise Refused(f"no commit since the library.json bump to {version} has the version header at {version}")
+
+
 def _release_library(event: str, before: str) -> int:
     name, version = read_library(open("library.json", encoding="utf-8").read())
-    have = header_version(_version_headers())
+    headers = _version_headers()
+    have = header_version(headers)
     if have != version:
         raise Refused(f"library.json version {version} differs from the version header's {have}")
     action, why = _decide_release(event, before, version, "library.json")
     if action == "noop":
         return _noop(why)
     tag = f"v{version}"
-    sha = _introducing_sha(version, "library.json")
+    sha = _library_tag_sha(version, next(iter(headers)))
     api("POST", f"/repos/{os.environ['GITHUB_REPOSITORY']}/git/refs", os.environ["GITHUB_TOKEN"],
         {"ref": f"refs/tags/{tag}", "sha": sha})
     print(f"tagged {tag} at {sha} (library: no release)")
