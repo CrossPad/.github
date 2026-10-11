@@ -10,6 +10,10 @@ name: App release (reusable)
 #
 # No backfill: while a repo has no vX.Y.Z tag, only a push that bumps the
 # version publishes (see scripts/app_release.py).
+#
+# `kind: library` (crosspad-core, crosspad-gui): a bare vX.Y.Z tag, no release,
+# no announcer event. Libraries call `@v2`; apps stay on `@v1`, whose scripts
+# are unchanged.
 on:
   workflow_call:
     inputs:
@@ -17,6 +21,10 @@ on:
         type: string
         required: false
         default: ubuntu-latest
+      kind:
+        type: string
+        required: false
+        default: app
 
 permissions:
   contents: write
@@ -39,15 +47,16 @@ jobs:
         with:
           repository: CrossPad/.github
           # refs/tags/: a bare `v1` would prefer a branch named v1.
-          ref: refs/tags/v1
+          ref: refs/tags/v2
           path: .crosspad-ci
           persist-credentials: false
-      - name: Tag and publish the version
+      - name: Tag (and for an app, publish) the version
         env:
           GITHUB_TOKEN: ${{ github.token }}
           GIT_CONFIG_GLOBAL: /dev/null
           EVENT_NAME: ${{ github.event_name }}
           BEFORE: ${{ github.event.before }}
+          KIND: ${{ inputs.kind }}
         run: >
           python3 -I .crosspad-ci/scripts/app_release.py release
-          --event "$EVENT_NAME" --before "$BEFORE"
+          --kind "$KIND" --event "$EVENT_NAME" --before "$BEFORE"

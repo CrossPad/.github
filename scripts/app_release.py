@@ -13,6 +13,11 @@ specs/2026-10-10-release-automation-design.md, "CrossPad/.github".
 
 No backfill: while the repo has no vX.Y.Z tag, only a push that itself bumps the
 version publishes (the existing versions get no tags, no burst of pings).
+
+--kind library (crosspad-core, crosspad-gui): the version is library.json's and
+must equal the repo's one include/**/Crosspad*Version.hpp triple; the result is
+a bare vX.Y.Z tag and no GitHub release, so no announcer event, no post: the
+platform-idf bump reads tags. The no-backfill rule is the same.
 """
 import argparse
 import json
@@ -68,6 +73,44 @@ def check_library(version: str, library_text: str | None) -> str | None:
         return None
     lib = str(_load_object(library_text, "library.json").get("version", ""))
     return None if lib == version else f"library.json version {lib} differs from crosspad-app.json {version}"
+
+
+HEADER_DEFINE = re.compile(r"^[ \t]*#define[ \t]+(CROSSPAD_[A-Z]+)_VERSION_(MAJOR|MINOR|PATCH)[ \t]+(0|[1-9][0-9]*)[ \t]*$",
+                           re.M | re.ASCII)
+
+
+def read_library(text: str) -> tuple[str, str]:
+    doc = _load_object(text, "library.json")
+    version = str(doc.get("version", ""))
+    if not VERSION.fullmatch(version):
+        raise Refused(f"library.json version {version!r}: must be X.Y.Z")
+    name = str(doc.get("name", ""))
+    if not APP_ID.fullmatch(name):
+        raise Refused(f"library.json name {name!r}: letters, digits, '.', '_' and '-' only")
+    return name, version
+
+
+def header_triple(files: dict[str, str]) -> tuple[str, str]:
+    """(path, X.Y.Z) of the one version header triple the files define; files: path -> text."""
+    found = {}
+    for path, text in files.items():
+        for prefix, part, num in HEADER_DEFINE.findall(text):
+            found.setdefault((path, prefix), {})[part] = num
+    triples = {k: v for k, v in found.items() if set(v) == {"MAJOR", "MINOR", "PATCH"}}
+    if len(triples) != 1:
+        raise Refused(f"expected one CROSSPAD_*_VERSION_MAJOR/MINOR/PATCH header, found {len(triples)}")
+    (path, _), v = next(iter(triples.items()))
+    return path, f"{v['MAJOR']}.{v['MINOR']}.{v['PATCH']}"
+
+
+def header_version(files: dict[str, str]) -> str:
+    """The one X.Y.Z the version header(s) define; files: path -> text."""
+    return header_triple(files)[1]
+
+
+def _version_headers() -> dict[str, str]:
+    paths = [p for p in git("ls-files", "include").split() if re.fullmatch(r"include/(.+/)?Crosspad\w*Version\.hpp", p)]
+    return {p: open(p, encoding="utf-8").read() for p in paths}
 
 
 def newest_release(tags) -> tuple[int, int, int] | None:
@@ -134,20 +177,20 @@ def first_release_skip(event: str, before: str, introduced_before) -> str | None
     return None
 
 
-def _introducing_sha(version: str) -> str:
-    shas = git("log", "--first-parent", "--format=%H", "--", "crosspad-app.json").split()
+def _introducing_sha(version: str, manifest: str = "crosspad-app.json") -> str:
+    shas = git("log", "--first-parent", "--format=%H", "--", manifest).split()
     history = []
     for sha in shas:
-        v = _version_at(sha)
+        v = _version_at(sha, manifest)
         history.append((sha, v))
         if v != version:
             break
     return introducing_commit(history, version)
 
 
-def _version_at(sha: str) -> str | None:
+def _version_at(sha: str, manifest: str = "crosspad-app.json") -> str | None:
     try:
-        doc = json.loads(git("show", f"{sha}:crosspad-app.json"))
+        doc = json.loads(git("show", f"{sha}:{manifest}"))
     except (subprocess.CalledProcessError, ValueError):
         return None
     return str(doc.get("version")) if isinstance(doc, dict) else None
@@ -177,27 +220,40 @@ def _output(**kv) -> None:
                 f.write(f"{k}={v}\n")
 
 
-def cmd_release(event: str, before: str) -> int:
-    if before and not SHA.fullmatch(before):
-        raise Refused(f"--before {before!r}: not a commit sha")
-    app_id, name, version = read_manifest(open("crosspad-app.json", encoding="utf-8").read())
-    lib = open("library.json", encoding="utf-8").read() if os.path.exists("library.json") else None
-    problem = check_library(version, lib)
-    if problem:
-        raise Refused(problem)
+def _decide_release(event: str, before: str, version: str, manifest: str):
+    """(action, why) after the tag rules and the no-backfill rule."""
     tags = git("tag", "-l", "v*").split()
     tag = f"v{version}"
     ancestor = tag in tags and _is_ancestor(f"refs/tags/{tag}", "HEAD") is True
     action, why = decide(version, tags, ancestor)
     if action == "release" and newest_release(tags) is None:
         action, why = "noop", first_release_skip(
-            event, before, lambda: _is_ancestor(_introducing_sha(version), before)) or ""
+            event, before, lambda: _is_ancestor(_introducing_sha(version, manifest), before)) or ""
         if not why:
             action = "release"
+    return action, why
+
+
+def _noop(why: str) -> int:
+    print(f"::notice::{why}" if why.startswith("no vX.Y.Z") else why)
+    _output(released="false")
+    return 0
+
+
+def cmd_release(event: str, before: str, kind: str = "app") -> int:
+    if before and not SHA.fullmatch(before):
+        raise Refused(f"--before {before!r}: not a commit sha")
+    if kind == "library":
+        return _release_library(event, before)
+    app_id, name, version = read_manifest(open("crosspad-app.json", encoding="utf-8").read())
+    lib = open("library.json", encoding="utf-8").read() if os.path.exists("library.json") else None
+    problem = check_library(version, lib)
+    if problem:
+        raise Refused(problem)
+    action, why = _decide_release(event, before, version, "crosspad-app.json")
     if action == "noop":
-        print(f"::notice::{why}" if why.startswith("no vX.Y.Z") else why)
-        _output(released="false")
-        return 0
+        return _noop(why)
+    tag = f"v{version}"
     sha = _introducing_sha(version)
     changelog = changelog_of(_load_object(git("show", f"{sha}:crosspad-app.json"), "crosspad-app.json"))
     notes = notes_for(changelog, version) or f"{name} {version}"
@@ -209,15 +265,54 @@ def cmd_release(event: str, before: str) -> int:
     return 0
 
 
+def _library_tag_sha(version: str, header_path: str) -> str:
+    """The oldest first-parent commit, from the version's introducing commit up to HEAD, whose
+    library.json and version header are byte-identical to HEAD's. HEAD is what the checks validated
+    (header == library.json version, and for gui the requires range), so the tag carries validated
+    content; the header may land, or a range be fixed, after the bump."""
+    try:
+        want = {p: git("show", f"HEAD:{p}") for p in ("library.json", header_path)}
+    except subprocess.CalledProcessError as e:
+        raise Refused(f"cannot read library.json and {header_path} at HEAD") from e
+    first = _introducing_sha(version, "library.json")
+    shas = [first] + git("rev-list", "--first-parent", "--reverse", f"{first}..HEAD").split()
+    for sha in shas:
+        try:
+            if all(git("show", f"{sha}:{p}") == text for p, text in want.items()):
+                return sha
+        except subprocess.CalledProcessError:
+            continue
+    raise Refused(f"no commit since the library.json bump to {version} has library.json and {header_path} as at HEAD")
+
+
+def _release_library(event: str, before: str) -> int:
+    name, version = read_library(open("library.json", encoding="utf-8").read())
+    headers = _version_headers()
+    header_path, have = header_triple(headers)
+    if have != version:
+        raise Refused(f"library.json version {version} differs from the version header's {have}")
+    action, why = _decide_release(event, before, version, "library.json")
+    if action == "noop":
+        return _noop(why)
+    tag = f"v{version}"
+    sha = _library_tag_sha(version, header_path)
+    api("POST", f"/repos/{os.environ['GITHUB_REPOSITORY']}/git/refs", os.environ["GITHUB_TOKEN"],
+        {"ref": f"refs/tags/{tag}", "sha": sha})
+    print(f"tagged {tag} at {sha} (library: no release)")
+    _output(released="true", app_id=name, version=version, sha=sha)
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("release")
     r.add_argument("--event", required=True, help="github.event_name of the caller")
     r.add_argument("--before", required=True, help="github.event.before ('' outside a push)")
+    r.add_argument("--kind", choices=["app", "library"], default="app")
     ns = ap.parse_args(argv)
     try:
-        return cmd_release(ns.event, ns.before)
+        return cmd_release(ns.event, ns.before, ns.kind)
     except (Refused, OSError, ValueError, subprocess.CalledProcessError) as e:
         print("::error::" + str(e).replace("\r", "").replace("\n", "%0A"))
         return 1
