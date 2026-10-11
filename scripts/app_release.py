@@ -90,8 +90,8 @@ def read_library(text: str) -> tuple[str, str]:
     return name, version
 
 
-def header_version(files: dict[str, str]) -> str:
-    """The one X.Y.Z the version header(s) define; files: path -> text."""
+def header_triple(files: dict[str, str]) -> tuple[str, str]:
+    """(path, X.Y.Z) of the one version header triple the files define; files: path -> text."""
     found = {}
     for path, text in files.items():
         for prefix, part, num in HEADER_DEFINE.findall(text):
@@ -99,8 +99,13 @@ def header_version(files: dict[str, str]) -> str:
     triples = {k: v for k, v in found.items() if set(v) == {"MAJOR", "MINOR", "PATCH"}}
     if len(triples) != 1:
         raise Refused(f"expected one CROSSPAD_*_VERSION_MAJOR/MINOR/PATCH header, found {len(triples)}")
-    v = next(iter(triples.values()))
-    return f"{v['MAJOR']}.{v['MINOR']}.{v['PATCH']}"
+    (path, _), v = next(iter(triples.items()))
+    return path, f"{v['MAJOR']}.{v['MINOR']}.{v['PATCH']}"
+
+
+def header_version(files: dict[str, str]) -> str:
+    """The one X.Y.Z the version header(s) define; files: path -> text."""
+    return header_triple(files)[1]
 
 
 def _version_headers() -> dict[str, str]:
@@ -261,31 +266,36 @@ def cmd_release(event: str, before: str, kind: str = "app") -> int:
 
 
 def _library_tag_sha(version: str, header_path: str) -> str:
-    """The oldest first-parent commit, from the version's introducing commit up to HEAD, where
-    library.json and the version header both say `version`: the header may land after the bump."""
+    """The oldest first-parent commit, from the version's introducing commit up to HEAD, whose
+    library.json and version header are byte-identical to HEAD's. HEAD is what the checks validated
+    (header == library.json version, and for gui the requires range), so the tag carries validated
+    content; the header may land, or a range be fixed, after the bump."""
+    try:
+        want = {p: git("show", f"HEAD:{p}") for p in ("library.json", header_path)}
+    except subprocess.CalledProcessError as e:
+        raise Refused(f"cannot read library.json and {header_path} at HEAD") from e
     first = _introducing_sha(version, "library.json")
     shas = [first] + git("rev-list", "--first-parent", "--reverse", f"{first}..HEAD").split()
     for sha in shas:
         try:
-            if _version_at(sha, "library.json") == version and \
-                    header_version({header_path: git("show", f"{sha}:{header_path}")}) == version:
+            if all(git("show", f"{sha}:{p}") == text for p, text in want.items()):
                 return sha
-        except (Refused, subprocess.CalledProcessError):
+        except subprocess.CalledProcessError:
             continue
-    raise Refused(f"no commit since the library.json bump to {version} has the version header at {version}")
+    raise Refused(f"no commit since the library.json bump to {version} has library.json and {header_path} as at HEAD")
 
 
 def _release_library(event: str, before: str) -> int:
     name, version = read_library(open("library.json", encoding="utf-8").read())
     headers = _version_headers()
-    have = header_version(headers)
+    header_path, have = header_triple(headers)
     if have != version:
         raise Refused(f"library.json version {version} differs from the version header's {have}")
     action, why = _decide_release(event, before, version, "library.json")
     if action == "noop":
         return _noop(why)
     tag = f"v{version}"
-    sha = _library_tag_sha(version, next(iter(headers)))
+    sha = _library_tag_sha(version, header_path)
     api("POST", f"/repos/{os.environ['GITHUB_REPOSITORY']}/git/refs", os.environ["GITHUB_TOKEN"],
         {"ref": f"refs/tags/{tag}", "sha": sha})
     print(f"tagged {tag} at {sha} (library: no release)")

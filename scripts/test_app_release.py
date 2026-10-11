@@ -375,3 +375,58 @@ def test_library_tags_the_commit_where_the_header_caught_up(tmp_path, monkeypatc
     assert rc == 0
     assert calls[0][3] == {"ref": "refs/tags/v1.53.0", "sha": shas[2]}
     assert out[-1] == f"sha={shas[2]}"
+
+
+def _commit_lib(tmp_path, version, deps, msg, header=None):
+    Path("library.json").write_text(json.dumps({"name": "crosspad-gui", "version": version,
+                                                "dependencies": deps}))
+    Path("include/crosspad").mkdir(parents=True, exist_ok=True)
+    Path("include/crosspad/CrosspadGuiVersion.hpp").write_text(HEADER.replace("CORE", "GUI").format(*(header or version).split(".")))
+    subprocess.run(["git", "add", "-A"], check=True)
+    subprocess.run(["git", "commit", "-q", "-m", msg], check=True)
+    return subprocess.run(["git", "rev-parse", "HEAD"], check=True, capture_output=True, text=True).stdout.strip()
+
+
+def _lib_identity(monkeypatch, tmp_path):
+    for k, v in {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t",
+                 "GIT_COMMITTER_EMAIL": "t@t"}.items():
+        monkeypatch.setenv(k, v)
+    monkeypatch.chdir(tmp_path)
+    subprocess.run(["git", "init", "-q", "-b", "main"], check=True)
+
+
+def test_library_tags_the_commit_whose_range_was_fixed_not_the_bump(tmp_path, monkeypatch, run_lib):
+    # c1 bumps to 1.24.0 but leaves the old core range; c2 fixes the range: the tag must carry c2's content.
+    _lib_identity(monkeypatch, tmp_path)
+    c0 = _commit_lib(tmp_path, "1.23.0", {"crosspad-core": "^1.53.0"}, "c0")
+    subprocess.run(["git", "tag", "v1.23.0", c0], check=True)
+    c1 = _commit_lib(tmp_path, "1.24.0", {"crosspad-core": "^1.53.0"}, "c1 bump, range left behind")
+    c2 = _commit_lib(tmp_path, "1.24.0", {"crosspad-core": "^1.55.0"}, "c2 range fixed")
+    rc, calls, out = run_lib("push", c1)
+    assert rc == 0
+    assert calls[0][3] == {"ref": "refs/tags/v1.24.0", "sha": c2} and c1 != c2
+    assert out[-1] == f"sha={c2}"
+
+
+def test_library_normal_bump_tags_the_introducing_commit(tmp_path, monkeypatch, run_lib):
+    _lib_identity(monkeypatch, tmp_path)
+    c0 = _commit_lib(tmp_path, "1.23.0", {"crosspad-core": "^1.53.0"}, "c0")
+    subprocess.run(["git", "tag", "v1.23.0", c0], check=True)
+    c1 = _commit_lib(tmp_path, "1.24.0", {"crosspad-core": "^1.55.0"}, "c1 bump")
+    Path("other.txt").write_text("x")
+    subprocess.run(["git", "add", "-A"], check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "c2 unrelated"], check=True)
+    rc, calls, _ = run_lib("push", c0)
+    assert rc == 0 and calls[0][3] == {"ref": "refs/tags/v1.24.0", "sha": c1}
+
+
+def test_library_header_path_is_the_file_holding_the_triple(tmp_path, monkeypatch, run_lib):
+    # A second Crosspad*Version.hpp without a full triple must not be taken for the header.
+    _lib_identity(monkeypatch, tmp_path)
+    Path("include/crosspad").mkdir(parents=True)
+    Path("include/crosspad/CrosspadAaaVersion.hpp").write_text("// no triple here\n")
+    c0 = _commit_lib(tmp_path, "1.23.0", {}, "c0")
+    subprocess.run(["git", "tag", "v1.23.0", c0], check=True)
+    c1 = _commit_lib(tmp_path, "1.24.0", {}, "c1")
+    rc, calls, _ = run_lib("push", c0)
+    assert rc == 0 and calls[0][3]["sha"] == c1
