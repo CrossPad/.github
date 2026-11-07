@@ -32,13 +32,17 @@ CrossPad is a sampler, sequencer and MIDI controller in one handheld box: 16 pre
 Everything on it is an app. Sampler, mixer, sequencer, song arranger, recorder, slicer and the rest are separate repositories built on a shared C++ core and an LVGL UI framework, so the same app code runs on the board and in a desktop simulator. Writing your own is the point.
 
 <div align="center">
-<img src="../docs/images/sim_home.png" alt="Home screen: the pad map" width="160">
-<img src="../docs/images/sim_kits.png" alt="Kit browser" width="160">
-<img src="../docs/images/sim_sampler.png" alt="Sampler with a kit loaded" width="160">
-<img src="../docs/images/sim_mixer.png" alt="Mixer" width="160">
-<img src="../docs/images/sim_sequencer.png" alt="Sequencer with a recorded pattern" width="160">
+<img src="../docs/images/sim_home.png" alt="The whole device in the simulator: home screen with the pad map" width="220">
+<img src="../docs/images/sim_sampler.png" alt="The whole device in the simulator: Sampler with a kit loaded, two pads hit" width="220">
 <br>
-<sub>Home screen, kit browser, Sampler, Mixer and Sequencer, captured from the PC simulator, which runs the same UI and apps as the device.</sub>
+<img src="../docs/images/sim_launcher.png" alt="App launcher: the home screen as an icon grid" width="260">
+<img src="../docs/images/sim_kits.png" alt="Kit browser" width="260">
+<img src="../docs/images/sim_mixer.png" alt="Mixer" width="260">
+<br>
+<img src="../docs/images/sim_sequencer.png" alt="Sequencer with a recorded pattern" width="260">
+<img src="../docs/images/sim_help.png" alt="Help app showing the simulator manual" width="260">
+<br>
+<sub>Captured from the PC simulator, which runs the same UI and apps as the device: home pad map, Sampler, app launcher (grid view), kit browser, Mixer, Sequencer and the Help app.</sub>
 </div>
 
 ## Start here
