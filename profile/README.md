@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://i.ibb.co/twTZr0mp/videoframe-2033.jpg" alt="CrossPad — a pocket-size open-source sampler" width="100%">
+<img src="../docs/images/banner.jpg" alt="CrossPad — a pocket-size open-source sampler" width="100%">
 
 # CrossPad
 
@@ -30,6 +30,16 @@
 CrossPad is a sampler, sequencer and MIDI controller in one handheld box: 16 pressure-sensitive RGB pads, a touch screen and an encoder, built-in speakers and microphones, two audio codecs, an SD card for kits and songs, haptics and a motion sensor. It talks USB MIDI and USB audio to a computer, BLE MIDI to phones and tablets, and TRS MIDI to other gear.
 
 Everything on it is an app. Sampler, mixer, sequencer, song arranger, recorder, slicer and the rest are separate repositories built on a shared C++ core and an LVGL UI framework, so the same app code runs on the board and in a desktop simulator. Writing your own is the point.
+
+<div align="center">
+<img src="../docs/images/sim_home.png" alt="Home screen: the pad map" width="160">
+<img src="../docs/images/sim_kits.png" alt="Kit browser" width="160">
+<img src="../docs/images/sim_sampler.png" alt="Sampler with a kit loaded" width="160">
+<img src="../docs/images/sim_mixer.png" alt="Mixer" width="160">
+<img src="../docs/images/sim_sequencer.png" alt="Sequencer with a recorded pattern" width="160">
+<br>
+<sub>Home screen, kit browser, Sampler, Mixer and Sequencer, captured from the PC simulator, which runs the same UI and apps as the device.</sub>
+</div>
 
 ## Start here
 
@@ -80,16 +90,79 @@ Everything on it is an app. Sampler, mixer, sequencer, song arranger, recorder, 
 | [**crosspad-mcp**](https://github.com/CrossPad/crosspad-mcp) | MCP server for AI coding assistants: build, flash, simulator and device tools |
 | [**FT6236**](https://github.com/CrossPad/FT6236), [**ML_SynthTools**](https://github.com/CrossPad/ML_SynthTools) | Forks of third-party libraries (touch driver, synthesis tools) |
 
-## License
+## 👥 The team behind CrossPad
 
-CrossPad's code is free software under the **GNU General Public License v3.0 or later**; third-party parts keep their own licences, listed in each repository's README. The firmware can optionally be built with a prebuilt sample-streaming engine that is a separately licensed binary and is not linked by default — see [platform-idf → Audio engines](https://github.com/CrossPad/platform-idf#audio-engines).
+CrossPad was born from inside the scene it serves: built by musicians and engineers who wanted a controller designed around how finger drummers actually perform, practice, and share. Every layer of the device — from pad response to app structure — is shaped by players and builders, not spec sheets.
 
-## Community
+<table align="center">
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://github.com/stevenashbeats">
+        <img src="https://github.com/stevenashbeats.png" width="120" style="border-radius: 50%;" alt="Steve Nash"><br>
+        <b>Steve Nash</b>
+      </a><br>
+      <sub>Fingerdrummer / Performer / Program Founder</sub><br><br>
+      <sub>World Champion fingerdrummer and creative technologist. Founder of the CrossPad project, combining music, design, and open technology to empower creators around the world.</sub><br><br>
+      <a href="https://github.com/stevenashbeats">
+        <img src="https://img.shields.io/badge/GitHub-%40stevenashbeats-181717?logo=github&logoColor=white" alt="GitHub @stevenashbeats">
+      </a><br>
+      <a href="https://www.instagram.com/stevenashbeats/">
+        <img src="https://img.shields.io/badge/Instagram-%40stevenashbeats-E4405F?logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
+      </a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://github.com/marcel-licence">
+        <img src="https://github.com/marcel-licence.png" width="120" style="border-radius: 50%;" alt="Marcel Licence"><br>
+        <b>Marcel Licence</b>
+      </a><br>
+      <sub>Programmer / Audio Systems Developer</sub><br><br>
+      <sub>Software engineer specializing in embedded audio and real-time DSP. Brings CrossPad's sound engine to life with precision, efficiency, and an open-source mindset.</sub><br><br>
+      <a href="https://github.com/marcel-licence">
+        <img src="https://img.shields.io/badge/GitHub-%40marcel--licence-181717?logo=github&logoColor=white" alt="GitHub @marcel-licence">
+      </a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://github.com/matixan">
+        <img src="https://github.com/matixan.png" width="120" style="border-radius: 50%;" alt="Mateusz Czarnecki"><br>
+        <b>Mateusz Czarnecki</b>
+      </a><br>
+      <sub>Hardware Designer</sub><br><br>
+      <sub>Electronics designer and prototyping expert responsible for CrossPad's hardware architecture. Focused on compact design, intuitive layout, and seamless integration between music and technology.</sub><br><br>
+      <a href="https://github.com/matixan">
+        <img src="https://img.shields.io/badge/GitHub-%40matixan-181717?logo=github&logoColor=white" alt="GitHub @matixan">
+      </a>
+    </td>
+  </tr>
+</table>
 
-Questions, ideas or something you built? Join us on [Discord](https://discord.gg/WscqnaDwFJ) or open an issue in the repository it concerns.
+<p align="center">
+  <a href="https://crosspad.app">
+    <img src="https://img.shields.io/badge/Website-crosspad.app-8B5CF6?style=for-the-badge&logo=googlechrome&logoColor=white" alt="crosspad.app">
+  </a>
+  &nbsp;
+  <a href="https://play.crosspad.app">
+    <img src="https://img.shields.io/badge/Web%20App-play.crosspad.app-00C896?style=for-the-badge&logo=googlechrome&logoColor=white" alt="play.crosspad.app">
+  </a>
+  &nbsp;
+  <a href="https://discord.gg/WscqnaDwFJ">
+    <img src="https://img.shields.io/discord/1368493946552062002?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=5865F2" alt="CrossPad Discord — members online">
+  </a>
+  &nbsp;
+  <a href="https://www.instagram.com/stevenashbeats/">
+    <img src="https://img.shields.io/badge/Follow-%40stevenashbeats-E4405F?style=for-the-badge&logo=instagram&logoColor=white" alt="Instagram @stevenashbeats">
+  </a>
+</p>
 
 <p align="center">
   <a href="https://discord.gg/WscqnaDwFJ">
     <img src="https://discord.com/api/guilds/1368493946552062002/widget.png?style=banner2" alt="CrossPad Discord: who is online right now">
   </a>
 </p>
+
+Got ideas, feedback, or something you built with CrossPad? Join us on [Discord](https://discord.gg/WscqnaDwFJ), reach out on Instagram, or open an issue on any repo — the community is the reason this project exists.
+
+---
+
+## License
+
+CrossPad's code is free software under the **GNU General Public License v3.0 or later**; third-party parts keep their own licences, listed in each repository's README. The firmware can optionally be built with a prebuilt sample-streaming engine that is a separately licensed binary and is not linked by default — see [platform-idf → Audio engines](https://github.com/CrossPad/platform-idf#audio-engines).
